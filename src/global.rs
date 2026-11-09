@@ -103,4 +103,10 @@ impl Global {
         let content = std::fs::read_to_string(file_path)?;
         Ok(Global::new(&content))
     }
+    
+    pub fn from_url(url: &str) -> Result<Self, ureq::Error> {
+        let mut response = ureq::get(url).call()?;
+        let content = response.body_mut().read_to_string()?;
+        Ok(Global::new(&content))
+    }
 }
