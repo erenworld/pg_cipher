@@ -13,6 +13,10 @@
 use chacha20poly1305::{aead::KeyInit, ChaCha20Poly1305, Nonce};
 use once_cell::sync::OnceCell;
 
+/*
+ * Key loaded in this backend, if any.  Private to the session, and can be
+ * set only once.
+ */
 static GLOBAL: OnceCell<Global> = OnceCell::new();
 
 /*
@@ -25,26 +29,43 @@ static GLOBAL: OnceCell<Global> = OnceCell::new();
  *
  * XXX: a fixed nonce is cryptographically weak.  It should at least be
  * configurable (GUC).
- *
  */
 pub struct Global {
-    pub cipher: ChaCha20Poly1305,
-    pub nonce: Nonce,
+    pub cipher: ChaCha20Poly1305, /* expanded secret key */
+    pub nonce: Nonce,             /* 12 bytes, same for every value */
 }
 
 impl Global {
+    /*
+     * get
+     *        Return the loaded key.  Raises an error if none is loaded.
+     */
     pub fn get() -> &'static Global {
         GLOBAL.get().expect("pg_cipher: secret key is not loaded")
     }
 
+    /*
+     * is_none
+     *        True if no key has been loaded in this backend.
+     */
     pub fn is_none() -> bool {
         GLOBAL.get().is_none()
     }
 
+    /*
+     * set
+     *        Store the key.  Returns false if a key was already loaded.
+     */
     pub fn set(g: Global) -> bool {
         GLOBAL.set(g).is_ok()
     }
 
+    /*
+     * new_from_bytes
+     *        Build a Global from a raw 32-byte key and the fixed nonce.
+     *
+     * TODO: load the nonce from a GUC instead of hardcoding it.
+     */
     pub fn new_from_bytes(bytes: &[u8]) -> Self {
         Global {
             cipher: ChaCha20Poly1305::new_from_slice(bytes)
@@ -55,6 +76,12 @@ impl Global {
         }
     }
 
+    /*
+     * new
+     *        Parse a hex-encoded key into raw bytes and build a Global.
+     *
+     * Whitespace, inner spaces and "0x" prefixes are ignored.
+     */
     pub fn new(content: &str) -> Self {
         let hex = content.trim().replace("0x", "").replace(' ', "");
 
@@ -66,6 +93,12 @@ impl Global {
         Global::new_from_bytes(&bytes)
     }
 
+    /*
+     * from_file
+     *        Build a Global from a key file on the database server.
+     *
+     * The file is read by the server process, not by the client.
+     */
     pub fn from_file(file_path: &str) -> Result<Self, std::io::Error> {
         let content = std::fs::read_to_string(file_path)?;
         Ok(Global::new(&content))
