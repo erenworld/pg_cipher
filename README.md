@@ -1,11 +1,13 @@
-# pg_cipher
+<p align="center">
+  <img src="public/banniere.png" alt="pg_cipher banner" width="100%" />
+</p>
 
 Transparent Column Encryption for PostgreSQL, written in Rust with [pgrx].
 
 > [!WARNING]
 > This is an educational reimplementation of [The Cryptic Elephant] by Dalibo.
 > It is experimental. **DO NOT USE IN PRODUCTION.**
-> If you need this feature, please refer to the original project.
+> If you need this extension, please refer to the original project.
 
 ## Usage
 
