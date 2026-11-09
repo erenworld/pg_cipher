@@ -12,6 +12,7 @@
 mod global;
 
 use crate::global::Global;
+use serde::{Deserialize, Serialize};
 use pgrx::prelude::*;
 
 ::pgrx::pg_module_magic!(name, version);
@@ -41,6 +42,33 @@ fn fetch_key_from_remote_file(url: &str) -> Option<bool> {
     Some(Global::set(g))
 }
 
+/*
+ * TceText
+ *        A text value stored encrypted on disk.
+ *
+ * Only the ciphertext is stored.  Since encryption is deterministic (fixed
+ * nonce), two equal plaintexts give equal ciphertexts: equality, hashing
+ * and btree indexes work on the ciphertext directly.
+ *
+ * Note that ordering follows the ciphertext bytes, not the plaintext.
+ */
+#[derive(
+    PostgresType,
+    Serialize,
+    Deserialize,
+    Debug,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Hash,
+    PostgresEq,
+    PostgresOrd,
+    PostgresHash,
+)]
+pub struct TceText {
+    ciphertext: Vec<u8>,
+}
 
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
