@@ -1,40 +1,53 @@
+/*-------------------------------------------------------------------------
+ *
+ * lib.rs
+ *        Entry point of the pg_cipher extension.
+ *
+ * Exposes the SQL functions to load the encryption key, and the TCETEXT
+ * type, which is encrypted on input and decrypted on output.
+ *
+ *-------------------------------------------------------------------------
+ */
+
 mod global;
+
+use crate::global::Global;
 use pgrx::prelude::*;
 
 ::pgrx::pg_module_magic!(name, version);
 
+/*
+ * fetch_key_from_local_file
+ *        Load the encryption key from a file on the database server.
+ *
+ * Returns true if the key was loaded, false if a key was already loaded in
+ * this session, and NULL if the file cannot be read.
+ */
 #[pg_extern]
-fn hello_pg_cipher() -> &'static str {
-    "Hello, pg_cipher"
+fn fetch_key_from_local_file(file_path: &str) -> Option<bool> {
+    let g = Global::from_file(file_path).ok()?;
+    Some(Global::set(g))
 }
+
+/*
+ * fetch_key_from_remote_file
+ *        Load the encryption key from an HTTP(S) URL.
+ *
+ * Same return values as fetch_key_from_local_file.
+ */
+#[pg_extern]
+fn fetch_key_from_remote_file(url: &str) -> Option<bool> {
+    let g = Global::from_url(url).ok()?;
+    Some(Global::set(g))
+}
+
 
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
     use pgrx::prelude::*;
-
-    #[pg_test]
-    fn test_hello_pg_cipher() {
-        assert_eq!("Hello, pg_cipher", crate::hello_pg_cipher());
-    }
 }
 
-#[cfg(feature = "pg_bench")]
-#[pg_schema]
-mod benches {
-    use pgrx::prelude::*;
-    use pgrx_bench::{black_box, Bencher};
-
-    #[pg_bench]
-    fn bench_hello_pg_cipher(b: &mut Bencher) {
-        b.iter(|| {
-            black_box(crate::hello_pg_cipher());
-        });
-    }
-}
-
-/// This module is required by `cargo pgrx test` invocations.
-/// It must be visible at the root of your extension crate.
 #[cfg(test)]
 pub mod pg_test {
     pub fn setup(_options: Vec<&str>) {
