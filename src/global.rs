@@ -10,8 +10,6 @@
  *-------------------------------------------------------------------------
  */
 
-use std::{alloc::GlobalAlloc, sync::Once};
-
 use chacha20poly1305::{aead::KeyInit, ChaCha20Poly1305, Nonce};
 use once_cell::sync::OnceCell;
 
@@ -27,7 +25,7 @@ static GLOBAL: OnceCell<Global> = OnceCell::new();
  *
  * XXX: a fixed nonce is cryptographically weak.  It should at least be
  * configurable (GUC).
- * 
+ *
  */
 pub struct Global {
     pub cipher: ChaCha20Poly1305,
@@ -49,10 +47,10 @@ impl Global {
 
     pub fn new_from_bytes(bytes: &[u8]) -> Self {
         Global {
-            cipher: ChaCha20Poly1305::new_from_slice(bytes).expect("pg_cipher: key must be 32 bytes"),
+            cipher: ChaCha20Poly1305::new_from_slice(bytes)
+                .expect("pg_cipher: key must be 32 bytes"),
             nonce: Nonce::from([
-                0xa7, 0xb8, 0xc9, 0xd0, 0xe1, 0xf2,
-                0x03, 0x45, 0x67, 0x89, 0x0a, 0xbc,
+                0xa7, 0xb8, 0xc9, 0xd0, 0xe1, 0xf2, 0x03, 0x45, 0x67, 0x89, 0x0a, 0xbc,
             ]),
         }
     }
@@ -61,12 +59,10 @@ impl Global {
         let hex = content.trim().replace("0x", "").replace(' ', "");
 
         let bytes: Vec<u8> = (0..hex.len())
-                .step_by(2)
-                .map(|i| {
-                    u8::from_str_radix(&hex[i..i + 2], 16).expect("pg_cipher: invalid hex in key")
-                })
-                .collect();
+            .step_by(2)
+            .map(|i| u8::from_str_radix(&hex[i..i + 2], 16).expect("pg_cipher: invalid hex in key"))
+            .collect();
 
         Global::new_from_bytes(&bytes)
-    }    
+    }
 }
