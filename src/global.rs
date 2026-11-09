@@ -25,8 +25,25 @@ static GLOBAL: OnceCell<Global> = OnceCell::new();
  * nonce is a fixed 12-byte value: this makes encryption deterministic,
  * which allows equality, indexes and ORDER BY on encrypted columns.
  *
+ * XXX: a fixed nonce is cryptographically weak.  It should at least be
+ * configurable (GUC).
+ * 
  */
 pub struct Global {
     pub cipher: ChaCha20Poly1305,
     pub nonce: Nonce,
+}
+
+impl Global {
+    pub fn get() -> &'static Global {
+        GLOBAL.get().expect("pg_cipher: secret key is not loaded")
+    }
+
+    pub fn is_none() -> bool {
+        GLOBAL.get().is_none()
+    }
+
+    pub fn set(g: Global) -> bool {
+        GLOBAL.set(g).is_ok()
+    } 
 }
