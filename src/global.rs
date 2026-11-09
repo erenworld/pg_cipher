@@ -65,4 +65,9 @@ impl Global {
 
         Global::new_from_bytes(&bytes)
     }
+
+    pub fn from_file(file_path: &str) -> Result<Self, std::io::Error> {
+        let content = std::fs::read_to_string(file_path)?;
+        Ok(Global::new(&content))
+    }
 }
