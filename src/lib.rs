@@ -1,3 +1,4 @@
+mod global;
 use pgrx::prelude::*;
 
 ::pgrx::pg_module_magic!(name, version);
@@ -16,14 +17,13 @@ mod tests {
     fn test_hello_pg_cipher() {
         assert_eq!("Hello, pg_cipher", crate::hello_pg_cipher());
     }
-
 }
 
 #[cfg(feature = "pg_bench")]
 #[pg_schema]
 mod benches {
     use pgrx::prelude::*;
-    use pgrx_bench::{Bencher, black_box};
+    use pgrx_bench::{black_box, Bencher};
 
     #[pg_bench]
     fn bench_hello_pg_cipher(b: &mut Bencher) {
