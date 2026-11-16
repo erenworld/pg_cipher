@@ -19,41 +19,18 @@ use serde::{Deserialize, Serialize};
 
 ::pgrx::pg_module_magic!(name, version);
 
-/*
- * fetch_key_from_local_file
- *        Load the encryption key from a file on the database server.
- *
- * Returns true if the key was loaded, false if a key was already loaded in
- * this session, and NULL if the file cannot be read.
- */
 #[pg_extern]
 fn fetch_key_from_local_file(file_path: &str) -> Option<bool> {
     let g = Global::from_file(file_path).ok()?;
     Some(Global::set(g))
 }
 
-/*
- * fetch_key_from_remote_file
- *        Load the encryption key from an HTTP(S) URL.
- *
- * Same return values as fetch_key_from_local_file.
- */
 #[pg_extern]
 fn fetch_key_from_remote_file(url: &str) -> Option<bool> {
     let g = Global::from_url(url).ok()?;
     Some(Global::set(g))
 }
 
-/*
- * TceText
- *        A text value stored encrypted on disk.
- *
- * Only the ciphertext is stored.  Since encryption is deterministic (fixed
- * nonce), two equal plaintexts give equal ciphertexts: equality, hashing
- * and btree indexes work on the ciphertext directly.
- *
- * Note that ordering follows the ciphertext bytes, not the plaintext.
- */
 #[derive(
     PostgresType,
     Serialize,
@@ -74,12 +51,6 @@ pub struct TceText {
 }
 
 impl InOutFuncs for TceText {
-    /*
-     * input
-     *        Encrypt the text typed by the user (e.g. 'alice'::tcetext).
-     *
-     * Raises an error if no key is loaded in this session.
-     */
     fn input(input: &core::ffi::CStr) -> Self {
         let g = Global::get();
         let ciphertext = g
@@ -89,14 +60,6 @@ impl InOutFuncs for TceText {
         TceText { ciphertext }
     }
 
-    /*
-     * output
-     *       Decrypt the value for display
-     *
-     * Without a key, the raw ciphertext bytes are printed instead of raising an error, so that SELECT * still works in a session with no key.
-     * 
-     * Raises an error if decryption fails (wrong or corrupted key)
-     */
     fn output(&self, buffer: &mut StringInfo) {
         if Global::is_none() {
             buffer.push_str(&format!("{:?}", self.ciphertext));
@@ -113,12 +76,6 @@ impl InOutFuncs for TceText {
     }
 }
 
-/*
-* raw
-*       Return the ciphertext of a TCETEXT value, without decrypting it.
-* 
-* Works without a key. Useful to check what is actually stored.
-*/
 #[pg_extern]
 fn raw(val: TceText) -> Vec<u8> {
     val.ciphertext
