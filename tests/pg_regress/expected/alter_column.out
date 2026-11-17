@@ -1,0 +1,35 @@
+BEGIN;
+-- Given a classic table
+CREATE TABLE person (
+    id SERIAL,
+    firstname TEXT
+);
+INSERT INTO person VALUES (1, 'alice'), (2, 'bob');
+CREATE EXTENSION IF NOT EXISTS pg_cipher;
+-- Load the secret key
+\! echo 603deb1015ca71be2b73aef0857d77811f352c073b6108d72d9810a30914dff4 > /tmp/chacha_key.txt
+SELECT fetch_key_from_local_file('/tmp/chacha_key.txt');
+ fetch_key_from_local_file 
+---------------------------
+ t
+(1 row)
+
+-- Convert column into an encrypted column
+ALTER TABLE person ALTER COLUMN firstname TYPE TCETEXT USING firstname::TCETEXT;
+SELECT firstname, raw(firstname) FROM person;
+ firstname |                     raw                      
+-----------+----------------------------------------------
+ alice     | \x34bebe556560e7fdd4abb441fcb537b7b8c0d67733
+ bob       | \x37bdb54762699534529bb40655fb01232e6f12
+(2 rows)
+
+-- Back to plain text
+ALTER TABLE person ALTER COLUMN firstname TYPE VARCHAR(100);
+SELECT firstname FROM person;
+ firstname 
+-----------
+ alice
+ bob
+(2 rows)
+
+ROLLBACK;
