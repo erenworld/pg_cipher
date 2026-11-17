@@ -33,6 +33,20 @@ SELECT name FROM person;
 
 -- Inspect the ciphertext stored on disk
 SELECT raw(name) FROM person;
+
+-- Encrypt an existing TEXT column
+CREATE TABLE customer (
+   id SERIAL,
+   email TEXT,
+);
+
+INSERT INTO customer (email) VALUES ('alice@example.com');
+
+-- USING is required: there is no implicit cast from TEXT to TCETEXT
+ALTER TABLE customer ALTER COLUMN email TYPE TCETEXT USING email::TCETEXT;
+
+-- Decrypt it back to plain text
+ALTER TABLE customer ALTER COLUMN email TYPE TEXT;
 ```
 
 ## Build
