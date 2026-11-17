@@ -7,9 +7,7 @@ edition = "2024"
 crate-type = ["cdylib"]
 
 [features]
-default = ["pg13"]
-pg13 = ["pgrx/pg13", "pgrx-tests/pg13" ]
-pg14 = ["pgrx/pg14", "pgrx-tests/pg14" ]
+default = ["pg17"]
 pg15 = ["pgrx/pg15", "pgrx-tests/pg15" ]
 pg16 = ["pgrx/pg16", "pgrx-tests/pg16" ]
 pg17 = ["pgrx/pg17", "pgrx-tests/pg17" ]
@@ -41,3 +39,11 @@ panic = "unwind"
 opt-level = 3
 lto = "fat"
 codegen-units = 1
+
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+expect_used = "warn"
+panic = "warn"
+undocumented_unsafe_blocks = "warn"
