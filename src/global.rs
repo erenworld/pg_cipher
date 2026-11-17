@@ -13,6 +13,9 @@
 use chacha20poly1305::{aead::KeyInit, ChaCha20Poly1305, Nonce};
 use once_cell::sync::OnceCell;
 
+use crate::actor::TceError;
+use crate::Result;
+
 static GLOBAL: OnceCell<Global> = OnceCell::new();
 
 pub struct Global {
@@ -21,8 +24,8 @@ pub struct Global {
 }
 
 impl Global {
-    pub fn get() -> &'static Global {
-        GLOBAL.get().expect("pg_cipher: secret key is not loaded")
+    pub fn get() -> Result<&'static Global> {
+        Ok(GLOBAL.get().ok_or(TceError::KeyNotLoaded)?)
     }
 
     pub fn is_none() -> bool {
@@ -57,12 +60,12 @@ impl Global {
         Global::new_from_bytes(&bytes)
     }
 
-    pub fn from_file(file_path: &str) -> Result<Self, std::io::Error> {
+    pub fn from_file(file_path: &str) -> Result<Self> {
         let content = std::fs::read_to_string(file_path)?;
         Ok(Global::new(&content))
     }
 
-    pub fn from_url(url: &str) -> Result<Self, ureq::Error> {
+    pub fn from_url(url: &str) -> Result<Self> {
         let mut response = ureq::get(url).call()?;
         let content = response.body_mut().read_to_string()?;
         Ok(Global::new(&content))
