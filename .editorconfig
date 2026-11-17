@@ -1,0 +1,30 @@
+# This is the project's root directory
+root = true
+
+[*]
+# Use spaces for indentation
+indent_style = space
+# Each indent should contain 4 spaces
+indent_size = 4
+# Use Unix line endings
+end_of_line = lf
+# The files are utf-8 encoded
+charset = utf-8
+# No whitespace at the end of line
+trim_trailing_whitespace = true
+# A file must end with an empty line - this is good for version control systems
+insert_final_newline = true
+
+[*.rs]
+# Match rustfmt's default max_width
+max_line_length = 100
+
+[*.{yml,yaml}]
+indent_size = 2
+
+# psql output has meaningful trailing spaces
+[tests/pg_regress/expected/*]
+trim_trailing_whitespace = false
+insert_final_newline = unset
+indent_size = unset
+indent_style = unset
