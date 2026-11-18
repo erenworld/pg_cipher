@@ -1,7 +1,10 @@
 use crate::global::Global;
+use crate::pg_type::datum::TceDatum;
+use crate::Result;
+
 use chacha20poly1305::aead::Aead;
-use pgrx::{InOutFuncs, StringInfo};
 use pgrx::prelude::*;
+use pgrx::{InOutFuncs, StringInfo};
 use serde::{Deserialize, Serialize};
 
 #[derive(
@@ -19,45 +22,31 @@ use serde::{Deserialize, Serialize};
     PostgresHash,
 )]
 #[inoutfuncs]
-pub struct TceText {
-    ciphertext: Vec<u8>,
+pub struct TceText(TceDatum);
+
+impl TceText {
+    /* Decrypt the value and decode it as UTF-8 */
+    fn to_string(&self) -> Result<String> {
+        let plain_bytes = self.0.to_plain_bytes()?;
+        Ok(String::from_utf8(plain_bytes)?)
+    }
 }
 
 impl InOutFuncs for TceText {
     fn input(input: &core::ffi::CStr) -> Self {
-        let g = match Global::get() {
-            Ok(g) => g,
+        let plain_bytes = input.to_bytes().to_vec();
+        let datum = match TceDatum::from_plain_bytes(plain_bytes) {
+            Ok(d) => d,
             Err(e) => pgrx::error!("{e}"),
         };
 
-        let ciphertext = g
-            .cipher
-            .encrypt(&g.nonce, input.to_bytes())
-            .expect("pg_cipher: encryption failed");
-        TceText { ciphertext }
+        TceText(datum)
     }
 
     fn output(&self, buffer: &mut StringInfo) {
-        if Global::is_none() {
-            buffer.push_str(&format!("{:?}", self.ciphertext));
-            return;
+        match self.to_string() {
+            Ok(val) => buffer.push_str(&val),
+            Err(_) => buffer.push_str("[ENCRYPTED]"),
         }
-
-        let g = match Global::get() {
-            Ok(g) => g,
-            Err(e) => pgrx::error!("{e}"),
-        };
-        
-        let plaintext = g
-                .cipher
-                .decrypt(&g.nonce, self.ciphertext.as_slice())
-                .expect("pg_cipher: decryption failed");
-
-            buffer.push_str(std::str::from_utf8(&plaintext).expect("pg_cipher: invalid UTF-8"));
     }
-}
-
-#[pg_extern]
-fn raw(val: TceText) -> Vec<u8> {
-    val.ciphertext
 }
