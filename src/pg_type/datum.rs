@@ -58,3 +58,18 @@ impl TceDatum {
         )
     }
 }
+
+
+/* Expose raw(<type>) in SQL for a TCE newtype wrapping a TceDatum. */
+#[macro_export]
+macro_rules! tce_extern_raw {
+    ($struct_name:ident) => {
+        paste::paste! {
+            #[pg_extern(name = "raw")]
+            pub fn [<raw_ $struct_name:lower>](val: $struct_name) -> String {
+                val.0.raw()
+            }
+        }
+    };
+}
+pub(crate) use tce_extern_raw;
