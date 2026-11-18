@@ -9,9 +9,9 @@
  *-------------------------------------------------------------------------
  */
 
+mod actor;
 mod global;
 mod pg_type;
-mod actor;
 
 use crate::global::Global;
 use pgrx::prelude::*;
@@ -45,7 +45,10 @@ mod tests {
     #[pg_test]
     fn test_fetch_key_from_local_file() {
         let path = fixtures_dir().join("untrusted_chacha_key.txt");
-        assert_eq!(fetch_key_from_local_file(path.to_str().unwrap()), Some(true));
+        assert_eq!(
+            fetch_key_from_local_file(path.to_str().unwrap()),
+            Some(true)
+        );
     }
 }
 

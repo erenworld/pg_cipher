@@ -10,11 +10,11 @@
  *-------------------------------------------------------------------------
  */
 
-use chacha20poly1305::{aead::KeyInit, ChaCha20Poly1305, Nonce};
+use chacha20poly1305::{ChaCha20Poly1305, Nonce, aead::KeyInit};
 use once_cell::sync::OnceCell;
 
-use crate::actor::TceError;
 use crate::Result;
+use crate::actor::TceError;
 
 static GLOBAL: OnceCell<Global> = OnceCell::new();
 
