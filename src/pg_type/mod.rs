@@ -1,2 +1,3 @@
-pub mod datum;
-pub mod text;
+
+mod datum;
+mod text;

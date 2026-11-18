@@ -47,7 +47,7 @@ impl TceDatum {
     }
 
     /* Encrypted bytes as TCE:b1:b2:... without decrypting */
-    fn raw(&self) -> String {
+    pub fn raw(&self) -> String {
         format!(
             "TCE:{}",
             self.cipher_vec
@@ -61,7 +61,6 @@ impl TceDatum {
 
 
 /* Expose raw(<type>) in SQL for a TCE newtype wrapping a TceDatum. */
-#[macro_export]
 macro_rules! tce_extern_raw {
     ($struct_name:ident) => {
         paste::paste! {

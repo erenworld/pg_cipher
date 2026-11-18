@@ -1,8 +1,6 @@
-use crate::global::Global;
 use crate::pg_type::datum::TceDatum;
-use crate::Result;
+use crate::{Result, tce_extern_raw};
 
-use chacha20poly1305::aead::Aead;
 use pgrx::prelude::*;
 use pgrx::{InOutFuncs, StringInfo};
 use serde::{Deserialize, Serialize};
@@ -50,3 +48,5 @@ impl InOutFuncs for TceText {
         }
     }
 }
+
+tce_extern_raw!(TceText);
