@@ -23,11 +23,16 @@ use crate::Result;
 pub struct TceText(TceDatum);
 
 impl TceText {
+    fn to_base_type(&self) -> Result<String> {
+        self.to_string()
+    }
+    
     /* Decrypt the value and decode it as UTF-8 */
     fn to_string(&self) -> Result<String> {
         let plain_bytes = self.0.to_plain_bytes()?;
         Ok(String::from_utf8(plain_bytes)?)
     }
+
 }
 
 impl InOutFuncs for TceText {
