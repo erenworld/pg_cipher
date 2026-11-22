@@ -21,7 +21,7 @@ pub struct TceDatum {
 }
 
 impl TceDatum {
-    /* Encrypt plain bytes into a new TceDatum with  */
+    /* Encrypt plain bytes into a new TceDatum  */
     pub fn from_plain_bytes(plain_bytes: Vec<u8>) -> Result<Self> {
         let cipher = &Global::get()?.cipher;
         let nonce = ChaCha20Poly1305::generate_nonce(&mut OsRng);
@@ -71,3 +71,16 @@ macro_rules! tce_extern_raw {
     };
 }
 pub(crate) use tce_extern_raw;
+
+macro_rules! tce_impl_ord_traits {
+    ($struct_name:ident) => {
+        impl Ord for $struct_name {
+            fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+                self.to_base_type()
+                    .unwrap()
+                    .cmp(&other.to_base_type().unwrap())
+            }
+        }
+    };
+}
+pub(crate) use tce_impl_ord_traits;
