@@ -81,6 +81,12 @@ macro_rules! tce_impl_ord_traits {
                     .cmp(&other.to_base_type().unwrap())
             }
         }
+
+        impl PartialOrd for $struct_name {
+            fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+                Some(self.cmp(other))
+            }
+        }
     };
 }
 pub(crate) use tce_impl_ord_traits;
