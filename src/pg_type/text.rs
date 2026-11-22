@@ -1,9 +1,9 @@
-use crate::pg_type::datum::TceDatum;
-use crate::{Result, tce_extern_raw};
+use super::*;
 
 use pgrx::prelude::*;
 use pgrx::{InOutFuncs, StringInfo};
 use serde::{Deserialize, Serialize};
+use crate::Result;
 
 #[derive(
     PostgresType,
