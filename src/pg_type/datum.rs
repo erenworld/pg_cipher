@@ -87,6 +87,12 @@ macro_rules! tce_impl_ord_traits {
                 Some(self.cmp(other))
             }
         }
+
+        impl PartialEq for $struct_name {
+            fn eq(&self, other: &Self) -> bool {
+                self.to_base_type().unwrap() == other.to_base_type().unwrap()
+            }
+        }
     };
 }
 pub(crate) use tce_impl_ord_traits;
