@@ -10,7 +10,7 @@
  *-------------------------------------------------------------------------
  */
 
-use chacha20poly1305::{ChaCha20Poly1305, Nonce, aead::KeyInit};
+use chacha20poly1305::{ChaCha20Poly1305, aead::KeyInit};
 use once_cell::sync::OnceCell;
 
 use crate::Result;
@@ -20,16 +20,11 @@ static GLOBAL: OnceCell<Global> = OnceCell::new();
 
 pub struct Global {
     pub cipher: ChaCha20Poly1305, /* expanded secret key */
-    pub nonce: Nonce,             /* 12 bytes, same for every value */
 }
 
 impl Global {
     pub fn get() -> Result<&'static Global> {
         Ok(GLOBAL.get().ok_or(TceError::KeyNotLoaded)?)
-    }
-
-    pub fn is_none() -> bool {
-        GLOBAL.get().is_none()
     }
 
     pub fn set(g: Global) -> bool {
@@ -43,9 +38,6 @@ impl Global {
         Global {
             cipher: ChaCha20Poly1305::new_from_slice(bytes)
                 .expect("pg_cipher: key must be 32 bytes"),
-            nonce: Nonce::from([
-                0xa7, 0xb8, 0xc9, 0xd0, 0xe1, 0xf2, 0x03, 0x45, 0x67, 0x89, 0x0a, 0xbc,
-            ]),
         }
     }
 
