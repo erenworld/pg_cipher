@@ -77,8 +77,8 @@ macro_rules! tce_impl_ord_traits {
         impl Ord for $struct_name {
             fn cmp(&self, other: &Self) -> std::cmp::Ordering {
                 self.to_base_type()
-                    .unwrap()
-                    .cmp(&other.to_base_type().unwrap())
+                    .expect("TCE: Failed to decrypt value")
+                    .cmp(&other.to_base_type().expect("TCE: Failed to decrypt value"))
             }
         }
 
@@ -90,13 +90,16 @@ macro_rules! tce_impl_ord_traits {
 
         impl PartialEq for $struct_name {
             fn eq(&self, other: &Self) -> bool {
-                self.to_base_type().unwrap() == other.to_base_type().unwrap()
+                self.to_base_type().expect("TCE: Failed to decrypt value")
+                    == other.to_base_type().expect("TCE: Failed to decrypt value")
             }
         }
 
         impl std::hash::Hash for $struct_name {
             fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-                self.to_base_type().unwrap().hash(state)
+                self.to_base_type()
+                    .expect("TCE: Failed to decrypt value")
+                    .hash(state)
             }
         }
     };
