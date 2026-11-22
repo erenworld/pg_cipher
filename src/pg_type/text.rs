@@ -11,10 +11,10 @@ use serde::{Deserialize, Serialize};
     Deserialize,
     Debug,
     Eq,
-    PartialEq,
-    Ord,
-    PartialOrd,
-    Hash,
+    // PartialEq,
+    // Ord,
+    // PartialOrd,
+    // Hash,
     PostgresEq,
     PostgresOrd,
     PostgresHash,
@@ -53,4 +53,5 @@ impl InOutFuncs for TceText {
     }
 }
 
+tce_impl_ord_traits!(TceText);
 tce_extern_raw!(TceText);
