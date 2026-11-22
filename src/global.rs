@@ -31,17 +31,14 @@ impl Global {
         GLOBAL.set(g).is_ok()
     }
 
-    /*
-     * TODO: load the nonce from a GUC instead of hardcoding it.
-     */
-    pub fn new_from_bytes(bytes: &[u8]) -> Self {
-        Global {
+    pub fn new_from_bytes(bytes: &[u8]) -> Result<Self> {
+        Ok(Global {
             cipher: ChaCha20Poly1305::new_from_slice(bytes)
-                .expect("pg_cipher: key must be 32 bytes"),
-        }
+                .map_err(|e| anyhow::anyhow!("Failed to create ChaCha20Poly1305 cipher: {e}"))?,
+        })
     }
 
-    pub fn new(content: &str) -> Self {
+    pub fn new(content: &str) -> Result<Self> {
         let hex = content.trim().replace("0x", "").replace(' ', "");
 
         let bytes: Vec<u8> = (0..hex.len())
@@ -54,12 +51,12 @@ impl Global {
 
     pub fn from_file(file_path: &str) -> Result<Self> {
         let content = std::fs::read_to_string(file_path)?;
-        Ok(Global::new(&content))
+        Global::new(&content)
     }
 
     pub fn from_url(url: &str) -> Result<Self> {
         let mut response = ureq::get(url).call()?;
         let content = response.body_mut().read_to_string()?;
-        Ok(Global::new(&content))
+        Global::new(&content)
     }
 }
