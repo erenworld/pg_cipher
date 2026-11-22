@@ -93,6 +93,12 @@ macro_rules! tce_impl_ord_traits {
                 self.to_base_type().unwrap() == other.to_base_type().unwrap()
             }
         }
+
+        impl std::hash::Hash for $struct_name {
+            fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+                self.to_base_type().unwrap().hash(state)
+            }
+        }
     };
 }
 pub(crate) use tce_impl_ord_traits;
