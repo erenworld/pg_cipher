@@ -26,8 +26,8 @@ impl TceDatum {
         let cipher = &Global::get()?.cipher;
         let nonce = ChaCha20Poly1305::generate_nonce(&mut OsRng);
         let cipher_vec = cipher
-        .encrypt(&nonce, plain_bytes.as_slice())
-        .map_err(|e| anyhow::anyhow!("pg_cipher: encryption failed: {e}"))?;
+            .encrypt(&nonce, plain_bytes.as_slice())
+            .map_err(|e| anyhow::anyhow!("pg_cipher: encryption failed: {e}"))?;
 
         Ok(Self {
             nonce: nonce.to_vec(),
@@ -38,7 +38,7 @@ impl TceDatum {
     pub fn to_plain_bytes(&self) -> Result<Vec<u8>> {
         let cipher = &Global::get()?.cipher;
         let nonce = Nonce::from_slice(&self.nonce);
-    
+
         let plain_bytes = cipher
             .decrypt(nonce, self.cipher_vec.as_slice())
             .map_err(|e| anyhow::anyhow!("pg_cipher: decryption failed: {e}"))?;
@@ -58,7 +58,6 @@ impl TceDatum {
         )
     }
 }
-
 
 /* Expose raw(<type>) in SQL for a TCE newtype wrapping a TceDatum. */
 macro_rules! tce_extern_raw {
